@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h1>Contrôle Servo BLE</h1>
+<button onclick="connectBLE()">Se connecter</button>
+<button onclick="sendMove(1)">Avancer</button>
+<button onclick="sendMove(2)">Gauche</button>
+<button onclick="sendMove(3)">Droite</button>
+<button onclick="sendMove(4)">Arrière</button>
+<button onclick="sendMove(5)">Happy</button>
+<button onclick="sendMove(0)">Stop</button>
+
+<script>
+let moveChar;
+
+async function connectBLE() {
+    try {
+        const device = await navigator.bluetooth.requestDevice({
+            filters: [{ name: 'Nano33BLE_Servos' }],
+            optionalServices: ['180a']
+        });
+        const server = await device.gatt.connect();
+        const service = await server.getPrimaryService('180a');
+        moveChar = await service.getCharacteristic('2a57');
+        alert("Connecté au robot !");
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+async function sendMove(value) {
+    if (!moveChar) return alert("Pas connecté !");
+    let data = new Uint8Array([value]);
+    await moveChar.writeValue(data);
+}
+</script>
+</body>
+</html>
